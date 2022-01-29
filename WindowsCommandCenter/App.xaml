@@ -31,12 +31,13 @@
                         <Canvas SnapsToDevicePixels="true">
                             <Grid Height="20" Width="30">
                                 <Rectangle x:Name="Background"
-                            Fill="{StaticResource MainSliderThumBrush}" Stroke="#FFDADADA"
+                            Fill="{StaticResource MainSliderThumBrush}" Stroke="#FFffff"
                             Height="20" Width="30"
                             RadiusX="3" RadiusY="3"/>
                                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                             Foreground="White" FontSize="10"
-                            Text="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type Slider}}}"/>
+                            Text="{Binding Value, StringFormat='\{0:n0\}%', RelativeSource={RelativeSource AncestorType={x:Type Slider}}}">
+                                </TextBlock>
                             </Grid>
                         </Canvas>
                         <ControlTemplate.Triggers>
