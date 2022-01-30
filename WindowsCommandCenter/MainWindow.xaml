@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowsCommandCenter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Icon="/icon.png">
+        Title="Windows Command Center" Height="450" Width="800" Icon="/icon.png" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid>
-        <Slider Name="brightnessSlider" Minimum="0" Maximum="100" SmallChange="1" LargeChange="1" HorizontalAlignment="Left" Margin="34,43,0,0" VerticalAlignment="Top" Width="307" Style="{StaticResource MainSliderStyle}" PreviewMouseUp="brightnessSlider_PreviewMouseUp"/>
-        <Label Name="brightnessLabel" Content="Label" HorizontalAlignment="Left" Margin="303,68,0,0" VerticalAlignment="Top"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="141*"/>
+            <ColumnDefinition Width="259*"/>
+        </Grid.ColumnDefinitions>
+        <Slider Name="brightnessSlider" Minimum="0" Maximum="100" SmallChange="1" LargeChange="1" HorizontalAlignment="Left" Margin="34,43,0,0" VerticalAlignment="Top" Width="307" Style="{StaticResource MainSliderStyle}" PreviewMouseUp="brightnessSlider_PreviewMouseUp" Grid.ColumnSpan="2"/>
+        <Label Name="brightnessLabel" Content="Label" HorizontalAlignment="Left" Margin="21,68,0,0" VerticalAlignment="Top" Grid.Column="1"/>
 
     </Grid>
 </Window>
