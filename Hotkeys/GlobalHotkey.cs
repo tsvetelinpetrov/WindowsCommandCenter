@@ -11,10 +11,12 @@ namespace Hotkeys
 
         Window mainWindow;
         private HwndSource _source;
+        Func<int, int> hotkeyHandler;
 
-        public GlobalHotkey(Window mainWindow)
+        public GlobalHotkey(Window mainWindow, Func<int, int> hotkeyHandler)
         {
             this.mainWindow = mainWindow;
+            this.hotkeyHandler = hotkeyHandler;
         }
 
         public void Initialize(EventArgs e)
@@ -77,7 +79,7 @@ namespace Hotkeys
 
         private void OnHotKeyPressed(int hotKeyId)
         {
-            Console.WriteLine(hotKeyId);
+            hotkeyHandler(hotKeyId);
         }
 
         [DllImport("User32.dll")]

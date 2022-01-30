@@ -20,7 +20,7 @@ namespace WindowsCommandCenter
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            ghk = new GlobalHotkey(this);
+            ghk = new GlobalHotkey(this, HotkeyHandler);
             ghk.Initialize(e);
         }
 
@@ -53,6 +53,23 @@ namespace WindowsCommandCenter
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
+        }
+
+        public int HotkeyHandler(int hotkeyCode)
+        {
+            Console.WriteLine(hotkeyCode);
+            switch (hotkeyCode)
+            {
+                case Constants.HOTKEY_BRIGHTNESS_UP_ID:
+                    monitorsController.Set(Convert.ToUInt32(monitorsController.Get()) + 3);
+                    break;
+                case Constants.HOTKEY_BRIGHTNESS_DOWN_ID:
+                    monitorsController.Set(Convert.ToUInt32(monitorsController.Get()) - 3);
+                    break;
+            }
+            brightnessLabel.Content = monitorsController.Get().ToString() + "%";
+            brightnessSlider.Value = monitorsController.Get();
+            return 0;
         }
     }
 }
