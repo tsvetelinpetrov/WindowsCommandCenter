@@ -61,10 +61,10 @@ namespace WindowsCommandCenter
             switch (hotkeyCode)
             {
                 case Constants.HOTKEY_BRIGHTNESS_UP_ID:
-                    monitorsController.Set(Convert.ToUInt32(monitorsController.Get()) + 3);
+                    monitorsController.setBrightness(monitorsController.getBrightness() + 3);
                     break;
                 case Constants.HOTKEY_BRIGHTNESS_DOWN_ID:
-                    monitorsController.Set(Convert.ToUInt32(monitorsController.Get()) - 3);
+                    monitorsController.setBrightness(monitorsController.getBrightness() - 3);
                     break;
             }
             brightnessLabel.Content = monitorsController.Get().ToString() + "%";

@@ -39,10 +39,12 @@ namespace WindowsCommandCenter
         #endregion
 
         private IReadOnlyCollection<MonitorInfo> Monitors { get; set; }
+        private int brightness;
 
         public MonitorsController()
         {
             UpdateMonitors();
+            brightness = Get();
         }
 
         #region Get & Set
@@ -83,6 +85,25 @@ namespace WindowsCommandCenter
                 return -1;
             }
             return (int)Monitors.Average(d => d.CurrentValue);
+        }
+
+        public int getBrightness()
+        {
+            return this.brightness;
+        }
+
+        public void setBrightness(int brightness)
+        {
+            if (brightness > 100)
+                brightness = 100;
+            else if (brightness < 0)
+                brightness = 0;
+
+            if (brightness == this.brightness)
+                return;
+
+            Set(Convert.ToUInt32(brightness));
+            this.brightness = brightness;
         }
         #endregion
 
