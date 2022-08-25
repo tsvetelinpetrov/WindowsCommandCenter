@@ -40,6 +40,7 @@ namespace WindowsCommandCenter
 
         private IReadOnlyCollection<MonitorInfo> Monitors { get; set; }
         private int brightness;
+        private int monitorsCount { get; set; }
 
         public MonitorsController()
         {
@@ -48,32 +49,37 @@ namespace WindowsCommandCenter
         }
 
         #region Get & Set
-        public void Set(uint brightness)
+        public void Set(uint brightness, int monitorIndex)
         {
-            Set(brightness, true);
+            Set(brightness, true, monitorIndex);
         }
 
-        private void Set(uint brightness, bool refreshMonitorsIfNeeded)
+        private void Set(uint brightness, bool refreshMonitorsIfNeeded, int monitorIndex = 0)
         {
             bool isSomeFail = false;
+            int i = 1;
             foreach (var monitor in Monitors)
             {
-                uint realNewValue = (monitor.MaxValue - monitor.MinValue) * brightness / 100 + monitor.MinValue;
-                if (SetMonitorBrightness(monitor.Handle, realNewValue))
+                if(monitorIndex == 0 || (monitorIndex == i))
                 {
-                    monitor.CurrentValue = realNewValue;
+                    uint realNewValue = (monitor.MaxValue - monitor.MinValue) * brightness / 100 + monitor.MinValue;
+                    if (SetMonitorBrightness(monitor.Handle, realNewValue))
+                    {
+                        monitor.CurrentBrightness = realNewValue;
+                    }
+                    else if (refreshMonitorsIfNeeded)
+                    {
+                        isSomeFail = true;
+                        break;
+                    }
                 }
-                else if (refreshMonitorsIfNeeded)
-                {
-                    isSomeFail = true;
-                    break;
-                }
+                i++;
             }
 
             if (refreshMonitorsIfNeeded && (isSomeFail || !Monitors.Any()))
             {
                 UpdateMonitors();
-                Set(brightness, false);
+                Set(brightness, false, monitorIndex);
                 return;
             }
         }
@@ -84,7 +90,7 @@ namespace WindowsCommandCenter
             {
                 return -1;
             }
-            return (int)Monitors.Average(d => d.CurrentValue);
+            return (int)Monitors.Average(d => d.CurrentBrightness);
         }
 
         public int getBrightness()
@@ -92,7 +98,7 @@ namespace WindowsCommandCenter
             return this.brightness;
         }
 
-        public void setBrightness(int brightness)
+        public void setBrightness(int brightness, int monitorIndex)
         {
             if (brightness > 100)
                 brightness = 100;
@@ -102,14 +108,47 @@ namespace WindowsCommandCenter
             if (brightness == this.brightness)
                 return;
 
-            Set(Convert.ToUInt32(brightness));
+            Set(Convert.ToUInt32(brightness), monitorIndex);
             this.brightness = brightness;
         }
+
+        public void brightnessIncrease(int monitorIndex)
+        {
+            foreach(var monitor in Monitors)
+            {
+                if(monitorIndex == 0 || (monitorIndex == monitor.Id))
+                {
+                    int newVal = (int)monitor.CurrentBrightness + 3;
+                    newVal = (newVal < 0) ? 0 : (newVal > 100) ? 100 : newVal;
+
+                    Set(Convert.ToUInt32(newVal), monitorIndex);
+
+                    monitor.CurrentBrightness = (uint)newVal;
+                }
+            }
+
+            //int newVal = this.brightness + 3;
+            //newVal = (newVal < 0) ? 0 : (newVal > 100) ? 100 : newVal;
+
+            //Set(Convert.ToUInt32(newVal), monitorIndex);
+            //this.brightness = newVal;
+        }
         #endregion
+
+        public int getMonitorsCount()
+        {
+            return this.monitorsCount;
+        }
+
+        public IReadOnlyCollection<MonitorInfo> getMonitors()
+        {
+            return this.Monitors;
+        }
 
         private void UpdateMonitors()
         {
             DisposeMonitors(this.Monitors);
+            monitorsCount = 0;
 
             var monitors = new List<MonitorInfo>();
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData) =>
@@ -130,8 +169,8 @@ namespace WindowsCommandCenter
 
                 foreach (PHYSICAL_MONITOR physicalMonitor in physicalMonitors)
                 {
-                    uint minValue = 0, currentValue = 0, maxValue = 0;
-                    if (!GetMonitorBrightness(physicalMonitor.hPhysicalMonitor, ref minValue, ref currentValue, ref maxValue))
+                    uint minValue = 0, CurrentBrightness = 0, maxValue = 0;
+                    if (!GetMonitorBrightness(physicalMonitor.hPhysicalMonitor, ref minValue, ref CurrentBrightness, ref maxValue))
                     {
                         DestroyPhysicalMonitor(physicalMonitor.hPhysicalMonitor);
                         continue;
@@ -139,12 +178,14 @@ namespace WindowsCommandCenter
 
                     var info = new MonitorInfo
                     {
+                        Id = monitorsCount+1,
                         Handle = physicalMonitor.hPhysicalMonitor,
                         MinValue = minValue,
-                        CurrentValue = currentValue,
+                        CurrentBrightness = CurrentBrightness,
                         MaxValue = maxValue,
                     };
                     monitors.Add(info);
+                    monitorsCount++;
                 }
 
                 return true;
@@ -189,10 +230,11 @@ namespace WindowsCommandCenter
 
         public class MonitorInfo
         {
+            public int Id { get; set; }
             public uint MinValue { get; set; }
             public uint MaxValue { get; set; }
             public IntPtr Handle { get; set; }
-            public uint CurrentValue { get; set; }
+            public uint CurrentBrightness { get; set; }
         }
         #endregion
     }
